@@ -269,7 +269,7 @@ npm run build
 ## 📞 Información de Contacto
 
 **Proyecto**: Sistema de Encuestas de Satisfacción - Parque Explora  
-**Desarrollador**: [Tu Nombre]  
+**Desarrollador**: Manuel Cristobal MOreno Lizcano  
 **Fecha**: Octubre 2024  
 **Versión**: 1.0.0  
 **Estado**: Completado y Desplegado
