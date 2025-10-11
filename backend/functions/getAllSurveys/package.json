@@ -1,0 +1,10 @@
+{
+  "name": "get-all-surveys",
+  "version": "1.0.0",
+  "description": "Lambda function to get all surveys for admin panel",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0"
+  }
+}
+

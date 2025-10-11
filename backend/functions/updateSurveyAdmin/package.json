@@ -1,0 +1,9 @@
+{
+  "name": "update-survey-admin",
+  "version": "1.0.0",
+  "description": "Lambda function to update survey from admin",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0"
+  }
+}

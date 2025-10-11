@@ -1,0 +1,9 @@
+{
+  "name": "delete-survey",
+  "version": "1.0.0",
+  "description": "Lambda function to delete survey",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1691.0"
+  }
+}
