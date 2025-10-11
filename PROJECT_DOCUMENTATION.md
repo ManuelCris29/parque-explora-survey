@@ -290,4 +290,4 @@ npm run build
 ---
 
 *Documentación completa del Sistema de Encuestas de Satisfacción - Parque Explora*  
-*Proyecto desarrollado como prueba técnica full-stack con AWS Serverless*
+
