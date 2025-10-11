@@ -270,7 +270,7 @@ npm run build
 
 **Proyecto**: Sistema de Encuestas de Satisfacción - Parque Explora  
 **Desarrollador**: Manuel Cristobal MOreno Lizcano  
-**Fecha**: Octubre 2024  
+**Fecha**: Octubre 2025  
 **Versión**: 1.0.0  
 **Estado**: Completado y Desplegado
 
