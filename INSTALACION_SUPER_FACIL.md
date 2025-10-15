@@ -60,6 +60,7 @@ winget install Amazon.SAM-CLI
 ```powershell
 git clone https://github.com/ManuelCris29/parque-explora-survey.git
 cd parque-explora-survey
+
 ```
 
 ### 3.2 Verificar que se descargó
@@ -136,14 +137,14 @@ npm install
 
 ### 6.3 Configurar la conexión
 ```powershell
-# Reemplaza TU_URL_AQUI con la URL que copiaste en el paso 5:
-echo "NEXT_PUBLIC_API_URL=https://TU_URL_AQUI/dev/" > .env.local
+# Usar la URL real del proyecto:
+echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
 echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
 ```
 
-**Ejemplo:**
+**Tu configuración real:**
 ```powershell
-echo "NEXT_PUBLIC_API_URL=https://abc123def456.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
+echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
 echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
 ```
 

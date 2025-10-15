@@ -1,7 +1,9 @@
-const AWS = require('aws-sdk');
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     console.log('DeleteSurvey function called with method:', event.httpMethod);
     const headers = {
         'Content-Type': 'application/json',
@@ -47,7 +49,7 @@ exports.handler = async (event) => {
             }
         };
 
-        const surveyExists = await dynamodb.get(getParams).promise();
+        const surveyExists = await dynamodb.send(new GetCommand(getParams));
 
         if (!surveyExists.Item) {
             return {
@@ -67,7 +69,7 @@ exports.handler = async (event) => {
             }
         };
 
-        await dynamodb.delete(deleteParams).promise();
+        await dynamodb.send(new DeleteCommand(deleteParams));
 
         return {
             statusCode: 200,

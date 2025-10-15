@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "Lambda function to create or update user data",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
-    "aws-sdk": "^2.1691.0",
+    "@aws-sdk/client-dynamodb": "^3.490.0",
+    "@aws-sdk/lib-dynamodb": "^3.490.0",
     "uuid": "^9.0.1"
   }
 }
+ 

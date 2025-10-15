@@ -43,8 +43,8 @@ abc123      → 123
 #### POST /users
 ```bash
 # Request válido
-curl -X POST https://your-api.amazonaws.com/dev/users \
-  -H "x-api-key: your-api-key" \
+curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
   -H "Content-Type: application/json" \
   -d '{
     "cedula": "12345678",
@@ -58,14 +58,14 @@ curl -X POST https://your-api.amazonaws.com/dev/users \
 #### GET /users/{cedula}
 ```bash
 # Usuario existente
-curl -X GET https://your-api.amazonaws.com/dev/users/12345678 \
-  -H "x-api-key: your-api-key"
+curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users/12345678 \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
 
 # Response esperado: 200 OK con datos del usuario
 
 # Usuario no existente
-curl -X GET https://your-api.amazonaws.com/dev/users/99999999 \
-  -H "x-api-key: your-api-key"
+curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users/99999999 \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
 
 # Response esperado: 404 Not Found
 ```
@@ -73,8 +73,8 @@ curl -X GET https://your-api.amazonaws.com/dev/users/99999999 \
 #### POST /surveys
 ```bash
 # Crear encuesta para usuario existente
-curl -X POST https://your-api.amazonaws.com/dev/surveys \
-  -H "x-api-key: your-api-key" \
+curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
   -H "Content-Type: application/json" \
   -d '{
     "cedula": "12345678"
@@ -86,8 +86,8 @@ curl -X POST https://your-api.amazonaws.com/dev/surveys \
 #### GET /surveys/user/{cedula}
 ```bash
 # Encuesta existente
-curl -X GET https://your-api.amazonaws.com/dev/surveys/user/12345678 \
-  -H "x-api-key: your-api-key"
+curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/user/12345678 \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
 
 # Response esperado: 200 OK con datos de encuesta y usuario
 ```
@@ -95,8 +95,8 @@ curl -X GET https://your-api.amazonaws.com/dev/surveys/user/12345678 \
 #### PUT /surveys/{surveyId}
 ```bash
 # Actualizar encuesta
-curl -X PUT https://your-api.amazonaws.com/dev/surveys/survey-uuid \
-  -H "x-api-key: your-api-key" \
+curl -X PUT https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/survey-uuid \
+  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
   -H "Content-Type: application/json" \
   -d '{
     "estado": "completed",
@@ -206,7 +206,7 @@ x-api-key: invalid-key
     },
     {
       "key": "apiKey",
-      "value": "your-api-key"
+      "value": "jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
     }
   ]
 }

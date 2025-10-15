@@ -5,7 +5,7 @@ Description: Sistema de Encuestas de Satisfacción - Parque Explora
 Globals:
   Function:
     Timeout: 30
-    Runtime: nodejs18.x
+    Runtime: nodejs22.x
     Environment:
       Variables:
         USERS_TABLE: !Ref UsersTable

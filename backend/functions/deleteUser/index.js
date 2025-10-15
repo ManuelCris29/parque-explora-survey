@@ -1,7 +1,9 @@
-const AWS = require('aws-sdk');
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     console.log('DeleteUser function called with method:', event.httpMethod);
     const headers = {
         'Content-Type': 'application/json',
@@ -47,7 +49,7 @@ exports.handler = async (event) => {
             }
         };
 
-        const userExists = await dynamodb.get(getParams).promise();
+        const userExists = await dynamodb.send(new GetCommand(getParams));
 
         if (!userExists.Item) {
             return {
@@ -67,7 +69,7 @@ exports.handler = async (event) => {
             }
         };
 
-        await dynamodb.delete(deleteParams).promise();
+        await dynamodb.send(new DeleteCommand(deleteParams));
 
         // También eliminar las encuestas asociadas
         const surveysParams = {
@@ -78,7 +80,7 @@ exports.handler = async (event) => {
             }
         };
 
-        const surveysResult = await dynamodb.scan(surveysParams).promise();
+        const surveysResult = await dynamodb.send(new ScanCommand(surveysParams));
 
         // Eliminar todas las encuestas del usuario
         if (surveysResult.Items && surveysResult.Items.length > 0) {

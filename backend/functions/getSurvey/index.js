@@ -1,8 +1,10 @@
-const AWS = require('aws-sdk');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -51,7 +53,7 @@ exports.handler = async (event) => {
             }
         };
 
-        const result = await dynamodb.query(params).promise();
+        const result = await dynamodb.send(new QueryCommand(params));
 
         if (!result.Items || result.Items.length === 0) {
             return {
@@ -70,7 +72,7 @@ exports.handler = async (event) => {
             Key: { cedula }
         };
 
-        const userResult = await dynamodb.get(userParams).promise();
+        const userResult = await dynamodb.send(new GetCommand(userParams));
 
         return {
             statusCode: 200,

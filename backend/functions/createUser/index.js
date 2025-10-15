@@ -1,9 +1,11 @@
-const AWS = require('aws-sdk');
-const { v4: uuidv4 } = require('uuid');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -58,14 +60,14 @@ exports.handler = async (event) => {
         };
 
         // Guardar en DynamoDB
-        const params = {
+        const command = new PutCommand({
             TableName: process.env.USERS_TABLE,
             Item: userData,
             ConditionExpression: 'attribute_not_exists(cedula) OR attribute_exists(cedula)',
             ReturnValues: 'ALL_OLD'
-        };
+        });
 
-        const result = await dynamodb.put(params).promise();
+        const result = await dynamodb.send(command);
 
         return {
             statusCode: 201,

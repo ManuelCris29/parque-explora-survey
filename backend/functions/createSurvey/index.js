@@ -1,9 +1,11 @@
-const AWS = require('aws-sdk');
-const { v4: uuidv4 } = require('uuid');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -51,7 +53,7 @@ exports.handler = async (event) => {
             Key: { cedula }
         };
 
-        const userResult = await dynamodb.get(userParams).promise();
+        const userResult = await dynamodb.send(new GetCommand(userParams));
         
         if (!userResult.Item) {
             return {
@@ -73,7 +75,7 @@ exports.handler = async (event) => {
             }
         };
 
-        const existingSurvey = await dynamodb.query(existingSurveyParams).promise();
+        const existingSurvey = await dynamodb.send(new QueryCommand(existingSurveyParams));
         
         if (existingSurvey.Items && existingSurvey.Items.length > 0) {
             const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -126,7 +128,7 @@ exports.handler = async (event) => {
             Item: surveyData
         };
 
-        await dynamodb.put(surveyParams).promise();
+        await dynamodb.send(new PutCommand(surveyParams));
 
         return {
             statusCode: 201,

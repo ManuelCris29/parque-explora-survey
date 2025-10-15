@@ -388,7 +388,7 @@ cp env.example .env.local
 
 # Editar .env.local y reemplazar YOUR_API_GATEWAY_URL con tu URL real
 # O crear manualmente:
-echo "NEXT_PUBLIC_API_URL=https://YOUR_API_URL/dev/" > .env.local
+echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
 echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
 
 # Ejecutar en desarrollo
@@ -414,7 +414,7 @@ aws cloudformation describe-stacks --stack-name parque-explora-survey-dev --regi
 .\scripts\populate-test-data.ps1
 
 # O manualmente con cURL
-curl -X POST https://YOUR_API_URL/dev/users \
+curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
   -H "Content-Type: application/json" \
   -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
   -d '{"cedula":"1234567890","nombre":"Usuario Prueba","email":"prueba@test.com","telefono":"3001234567"}'

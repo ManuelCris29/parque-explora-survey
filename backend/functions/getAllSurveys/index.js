@@ -1,7 +1,9 @@
-const AWS = require('aws-sdk');
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand, DeleteCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -30,7 +32,7 @@ exports.handler = async (event) => {
             TableName: process.env.SURVEYS_TABLE
         };
 
-        const result = await dynamodb.scan(params).promise();
+        const result = await dynamodb.send(new ScanCommand(params));
 
         // Enriquecer datos con información de usuarios
         const surveysWithUsers = await Promise.all(
@@ -42,7 +44,7 @@ exports.handler = async (event) => {
                             cedula: survey.cedula
                         }
                     };
-                    const userResult = await dynamodb.get(userParams).promise();
+                    const userResult = await dynamodb.send(new GetCommand(userParams));
                     return {
                         ...survey,
                         user: userResult.Item || null

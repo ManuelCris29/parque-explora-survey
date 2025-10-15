@@ -1,8 +1,10 @@
-const AWS = require('aws-sdk');
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const client = new DynamoDBClient({});
+const dynamodb = DynamoDBDocumentClient.from(client);
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     const headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -42,14 +44,14 @@ exports.handler = async (event) => {
         }
 
         // Buscar usuario en DynamoDB
-        const params = {
+        const command = new GetCommand({
             TableName: process.env.USERS_TABLE,
             Key: {
                 cedula: cedula
             }
-        };
+        });
 
-        const result = await dynamodb.get(params).promise();
+        const result = await dynamodb.send(command);
 
         if (!result.Item) {
             return {
