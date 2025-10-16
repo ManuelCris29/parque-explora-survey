@@ -1,7 +1,7 @@
 {
-  "name": "create-user",
+  "name": "survey-service",
   "version": "1.0.0",
-  "description": "Lambda function to create or update user data",
+  "description": "Unified Survey Service - CRUD operations for surveys",
   "main": "index.js",
   "type": "module",
   "dependencies": {
@@ -10,4 +10,3 @@
     "uuid": "^9.0.1"
   }
 }
- 

@@ -98,22 +98,25 @@ Resources:
               Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
 
-  # Lambda Functions
-  GetAllUsersFunction:
+  # Unified Services - SOLID Architecture
+  UserServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: backend/functions/getAllUsers/
+      FunctionName: !Sub '${Environment}-user-service'
+      CodeUri: backend/functions/userService/
       Handler: index.handler
       Environment:
         Variables:
           USERS_TABLE: !Ref UsersTable
+          SURVEYS_TABLE: !Ref SurveysTable
           API_KEY: !Ref ApiKeyValue
       Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SurveysTable
       Events:
+        # GET /users - Get all users
         GetAllUsers:
           Type: Api
           Properties:
@@ -122,46 +125,7 @@ Resources:
             Method: get
             Auth:
               ApiKeyRequired: true
-
-  GetAllSurveysFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/getAllSurveys/
-      Handler: index.handler
-      Environment:
-        Variables:
-          SURVEYS_TABLE: !Ref SurveysTable
-          USERS_TABLE: !Ref UsersTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref SurveysTable
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SurveysTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-      Events:
-        GetAllSurveys:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /surveys
-            Method: get
-            Auth:
-              ApiKeyRequired: true
-
-  CreateUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub '${Environment}-create-user'
-      CodeUri: backend/functions/createUser/
-      Handler: index.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-      Events:
+        # POST /users - Create user
         CreateUser:
           Type: Api
           Properties:
@@ -170,17 +134,7 @@ Resources:
             Method: post
             Auth:
               ApiKeyRequired: true
-
-  GetUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub '${Environment}-get-user'
-      CodeUri: backend/functions/getUser/
-      Handler: index.handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-      Events:
+        # GET /users/{cedula} - Get user by cedula
         GetUser:
           Type: Api
           Properties:
@@ -189,19 +143,52 @@ Resources:
             Method: get
             Auth:
               ApiKeyRequired: true
+        # PUT /users/{cedula} - Update user
+        UpdateUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /users/{cedula}
+            Method: put
+            Auth:
+              ApiKeyRequired: true
+        # DELETE /users/{cedula} - Delete user
+        DeleteUser:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /users/{cedula}
+            Method: delete
+            Auth:
+              ApiKeyRequired: true
 
-  CreateSurveyFunction:
+  SurveyServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub '${Environment}-create-survey'
-      CodeUri: backend/functions/createSurvey/
+      FunctionName: !Sub '${Environment}-survey-service'
+      CodeUri: backend/functions/surveyService/
       Handler: index.handler
+      Environment:
+        Variables:
+          SURVEYS_TABLE: !Ref SurveysTable
+          USERS_TABLE: !Ref UsersTable
+          API_KEY: !Ref ApiKeyValue
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-        - DynamoDBCrudPolicy:
             TableName: !Ref SurveysTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
       Events:
+        # GET /surveys - Get all surveys
+        GetAllSurveys:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /surveys
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        # POST /surveys - Create survey
         CreateSurvey:
           Type: Api
           Properties:
@@ -210,20 +197,8 @@ Resources:
             Method: post
             Auth:
               ApiKeyRequired: true
-
-  GetSurveyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub '${Environment}-get-survey'
-      CodeUri: backend/functions/getSurvey/
-      Handler: index.handler
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-        - DynamoDBReadPolicy:
-            TableName: !Ref SurveysTable
-      Events:
-        GetSurvey:
+        # GET /surveys/user/{cedula} - Get survey by user cedula
+        GetSurveyByUser:
           Type: Api
           Properties:
             RestApiId: !Ref ParqueExploraApi
@@ -231,17 +206,16 @@ Resources:
             Method: get
             Auth:
               ApiKeyRequired: true
-
-  UpdateSurveyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub '${Environment}-update-survey'
-      CodeUri: backend/functions/updateSurvey/
-      Handler: index.handler
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SurveysTable
-      Events:
+        # GET /surveys/{surveyId} - Get survey by ID
+        GetSurveyById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /surveys/{surveyId}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        # PUT /surveys/{surveyId} - Update survey
         UpdateSurvey:
           Type: Api
           Properties:
@@ -250,23 +224,73 @@ Resources:
             Method: put
             Auth:
               ApiKeyRequired: true
+        # DELETE /surveys/{surveyId} - Delete survey
+        DeleteSurvey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /surveys/{surveyId}
+            Method: delete
+            Auth:
+              ApiKeyRequired: true
 
-  GetRoomsFunction:
+  RoomServiceFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub '${Environment}-get-rooms'
-      CodeUri: backend/functions/getRooms/
+      FunctionName: !Sub '${Environment}-room-service'
+      CodeUri: backend/functions/roomService/
       Handler: index.handler
+      Environment:
+        Variables:
+          ROOMS_TABLE: !Ref RoomsTable
+          API_KEY: !Ref ApiKeyValue
       Policies:
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref RoomsTable
       Events:
-        GetRooms:
+        # GET /rooms - Get all rooms
+        GetAllRooms:
           Type: Api
           Properties:
             RestApiId: !Ref ParqueExploraApi
             Path: /rooms
             Method: get
+            Auth:
+              ApiKeyRequired: true
+        # POST /rooms - Create room
+        CreateRoom:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /rooms
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+        # GET /rooms/{roomId} - Get room by ID
+        GetRoom:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /rooms/{roomId}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        # PUT /rooms/{roomId} - Update room
+        UpdateRoom:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /rooms/{roomId}
+            Method: put
+            Auth:
+              ApiKeyRequired: true
+        # DELETE /rooms/{roomId} - Delete room
+        DeleteRoom:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /rooms/{roomId}
+            Method: delete
             Auth:
               ApiKeyRequired: true
 
@@ -290,145 +314,6 @@ Resources:
           Stage: !Ref Environment
 
   # Link API Key to Usage Plan
-  # CRUD Functions for Users
-  GetUserByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/getUserById/
-      Handler: index.handler
-      Environment:
-        Variables:
-          USERS_TABLE: !Ref UsersTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-      Events:
-        GetUserById:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/users/{cedula}
-            Method: get
-            Auth:
-              ApiKeyRequired: true
-
-  UpdateUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/updateUser/
-      Handler: index.handler
-      Environment:
-        Variables:
-          USERS_TABLE: !Ref UsersTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-      Events:
-        UpdateUser:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/users/{cedula}
-            Method: put
-            Auth:
-              ApiKeyRequired: true
-
-  DeleteUserFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/deleteUser/
-      Handler: index.handler
-      Environment:
-        Variables:
-          USERS_TABLE: !Ref UsersTable
-          SURVEYS_TABLE: !Ref SurveysTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SurveysTable
-      Events:
-        DeleteUser:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/users/{cedula}
-            Method: delete
-            Auth:
-              ApiKeyRequired: true
-
-  # CRUD Functions for Surveys
-  GetSurveyByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/getSurveyById/
-      Handler: index.handler
-      Environment:
-        Variables:
-          SURVEYS_TABLE: !Ref SurveysTable
-          USERS_TABLE: !Ref UsersTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref SurveysTable
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-      Events:
-        GetSurveyById:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/surveys/{surveyId}
-            Method: get
-            Auth:
-              ApiKeyRequired: true
-
-  UpdateSurveyAdminFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/updateSurveyAdmin/
-      Handler: index.handler
-      Environment:
-        Variables:
-          SURVEYS_TABLE: !Ref SurveysTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SurveysTable
-      Events:
-        UpdateSurveyAdmin:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/surveys/{surveyId}
-            Method: put
-            Auth:
-              ApiKeyRequired: true
-
-  DeleteSurveyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/functions/deleteSurvey/
-      Handler: index.handler
-      Environment:
-        Variables:
-          SURVEYS_TABLE: !Ref SurveysTable
-          API_KEY: !Ref ApiKeyValue
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref SurveysTable
-      Events:
-        DeleteSurvey:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ParqueExploraApi
-            Path: /admin/surveys/{surveyId}
-            Method: delete
-            Auth:
-              ApiKeyRequired: true
 
   ApiKeyUsagePlan:
     Type: AWS::ApiGateway::UsagePlanKey

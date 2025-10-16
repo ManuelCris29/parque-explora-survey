@@ -1,11 +1,11 @@
 {
-  "name": "delete-user",
+  "name": "room-service",
   "version": "1.0.0",
-  "description": "Lambda function to delete user",
+  "description": "Unified Room Service - CRUD operations for rooms",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.490.0",
     "@aws-sdk/lib-dynamodb": "^3.490.0"
-  },
-  "type": "module"
+  }
 }
