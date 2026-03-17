@@ -677,9 +677,6 @@ aws cloudformation describe-stacks --stack-name parque-explora-survey-dev --regi
 aws cloudformation delete-stack --stack-name parque-explora-survey-dev --region us-east-1
 ```
 
-## 👨‍💻 Autor
-
-Desarrollado como parte de la prueba técnica para Parque Explora.
 
 ## 📞 Soporte
 
