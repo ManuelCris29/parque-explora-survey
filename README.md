@@ -137,7 +137,7 @@ npm run dev
 
 **8.2 Probar el sistema**
 - Ve a: http://localhost:3000
-- Busca por cédula: `1234567890`
+- Busca por cédula: `12345678`
 - ¡Deberías ver la encuesta!
 
 ## 🆘 ¿Algo salió mal? (Soluciones Fáciles)
@@ -263,7 +263,7 @@ npm run dev
 ### 🏗️ ¿Cómo funciona por dentro?
 
 **Backend (En la nube AWS):**
-- **AWS Lambda**: 14 funciones que manejan las peticiones
+- **AWS Lambda**: 3 servicios unificados (UserService, SurveyService, RoomService)
 - **DynamoDB**: Base de datos donde se guarda todo
 - **API Gateway**: Recibe las peticiones del frontend
 - **CloudWatch**: Monitorea que todo funcione bien
@@ -435,14 +435,9 @@ curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
 - `GET /rooms` - Obtener lista de salas disponibles
 
 ### Panel de Administración
-- `GET /admin/users` - Obtener todos los usuarios
-- `GET /admin/users/{cedula}` - Obtener usuario específico
-- `PUT /admin/users/{cedula}` - Actualizar usuario
-- `DELETE /admin/users/{cedula}` - Eliminar usuario
-- `GET /admin/surveys` - Obtener todas las encuestas
-- `GET /admin/surveys/{surveyId}` - Obtener encuesta específica
-- `PUT /admin/surveys/{surveyId}` - Actualizar encuesta
-- `DELETE /admin/surveys/{surveyId}` - Eliminar encuesta
+- El panel usa los mismos endpoints públicos autenticados con API Key:
+- `GET /users`, `GET /users/{cedula}`, `POST /users`, `PUT /users/{cedula}`, `DELETE /users/{cedula}`
+- `GET /surveys`, `GET /surveys/{surveyId}`, `POST /surveys`, `PUT /surveys/{surveyId}`, `DELETE /surveys/{surveyId}`
 
 ### Autenticación
 Todos los endpoints requieren el header:
@@ -491,8 +486,8 @@ npm start
 # Ejecutar API localmente
 sam local start-api --port 3001
 
-# Test de funciones individuales
-sam local invoke CreateUserFunction
+# Test de funciones individuales (arquitectura actual)
+sam local invoke UserServiceFunction
 ```
 
 ### Datos de Prueba
@@ -501,7 +496,7 @@ sam local invoke CreateUserFunction
 .\scripts\populate-test-data.ps1
 
 # Verificar datos creados
-curl -X GET https://YOUR_API_URL/dev/admin/users \
+curl -X GET https://YOUR_API_URL/dev/users \
   -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
 ```
 
@@ -586,7 +581,7 @@ npm run build
 - Documentación clara y completa
 
 ### ✅ Servicios AWS Correctamente Utilizados
-- **Lambda**: 14 funciones serverless optimizadas
+- **Lambda**: 3 servicios serverless unificados y optimizados
 - **DynamoDB**: 3 tablas con índices apropiados
 - **API Gateway**: REST API con autenticación por API Key
 - **SAM**: Infraestructura como código

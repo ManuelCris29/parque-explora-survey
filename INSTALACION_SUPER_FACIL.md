@@ -179,7 +179,7 @@ cd parque-explora-survey
 
 ### 8.3 Probar el sistema
 1. Ve a **http://localhost:3000**
-2. Busca por cédula: `1234567890`
+2. Busca por cédula: `12345678`
 3. ¡Deberías ver una encuesta completa!
 
 ---

@@ -72,7 +72,7 @@ function Test-Prerequisites {
 function Install-BackendDependencies {
     Write-Status "Configurando backend..."
     
-    $functions = @("createUser", "getUser", "createSurvey", "getSurvey", "updateSurvey", "getRooms")
+    $functions = @("userService", "surveyService", "roomService")
     
     foreach ($func in $functions) {
         Write-Status "Instalando dependencias para $func..."
@@ -145,12 +145,9 @@ function Test-ProjectStructure {
         "template.yaml",
         "README.md",
         "frontend\package.json",
-        "backend\functions\createUser\package.json",
-        "backend\functions\getUser\package.json",
-        "backend\functions\createSurvey\package.json",
-        "backend\functions\getSurvey\package.json",
-        "backend\functions\updateSurvey\package.json",
-        "backend\functions\getRooms\package.json"
+        "backend\functions\userService\package.json",
+        "backend\functions\surveyService\package.json",
+        "backend\functions\roomService\package.json"
     )
     
     foreach ($file in $requiredFiles) {
