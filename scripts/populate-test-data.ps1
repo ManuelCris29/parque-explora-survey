@@ -77,27 +77,39 @@ function New-TestUser {
     $usersTable = "$Environment-parque-explora-users"
     
     $userData = @{
-        cedula = $Cedula
-        nombre = $Nombre
-        email = $Email
-        telefono = $Telefono
-        fechaCompra = $FechaCompra
-        boletaId = $BoletaId
-        fechaCreacion = $FechaCompra
-        fechaActualizacion = $FechaCompra
-    } | ConvertTo-Json -Compress
+        cedula = @{ S = $Cedula }
+        nombre = @{ S = $Nombre }
+        email = @{ S = $Email }
+        telefono = @{ S = $Telefono }
+        fechaCompra = @{ S = $FechaCompra }
+        boletaId = @{ S = $BoletaId }
+        fechaCreacion = @{ S = $FechaCompra }
+        fechaActualizacion = @{ S = $FechaCompra }
+    }
     
     try {
-        $userDataJson = $userData | ConvertTo-Json -Depth 10
+        $userDataJson = $userData | ConvertTo-Json -Compress -Depth 10
+        $tempFile = New-TemporaryFile
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($tempFile.FullName, $userDataJson, $utf8NoBom)
         aws dynamodb put-item `
             --table-name $usersTable `
-            --item $userDataJson `
+            --item "file://$($tempFile.FullName)" `
             --region $Region | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "aws dynamodb put-item falló con código $LASTEXITCODE"
+        }
+
+        Remove-Item -Path $tempFile.FullName -Force -ErrorAction SilentlyContinue
         
         Write-Success "Usuario creado: $Nombre ($Cedula)"
         return $true
     }
     catch {
+        if ($tempFile -and (Test-Path $tempFile.FullName)) {
+            Remove-Item -Path $tempFile.FullName -Force -ErrorAction SilentlyContinue
+        }
         Write-Error "Error creando usuario $Cedula`: $($_.Exception.Message)"
         return $false
     }
@@ -115,24 +127,36 @@ function New-TestRoom {
     $roomsTable = "$Environment-parque-explora-rooms"
     
     $roomData = @{
-        roomId = $RoomId
-        nombre = $Nombre
-        descripcion = $Descripcion
-        categoria = $Categoria
-        estado = "activa"
-    } | ConvertTo-Json -Compress
+        roomId = @{ S = $RoomId }
+        nombre = @{ S = $Nombre }
+        descripcion = @{ S = $Descripcion }
+        categoria = @{ S = $Categoria }
+        estado = @{ S = "activa" }
+    }
     
     try {
-        $roomDataJson = $roomData | ConvertTo-Json -Depth 10
+        $roomDataJson = $roomData | ConvertTo-Json -Compress -Depth 10
+        $tempFile = New-TemporaryFile
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+        [System.IO.File]::WriteAllText($tempFile.FullName, $roomDataJson, $utf8NoBom)
         aws dynamodb put-item `
             --table-name $roomsTable `
-            --item $roomDataJson `
+            --item "file://$($tempFile.FullName)" `
             --region $Region | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "aws dynamodb put-item falló con código $LASTEXITCODE"
+        }
+
+        Remove-Item -Path $tempFile.FullName -Force -ErrorAction SilentlyContinue
         
         Write-Success "Sala creada: $Nombre ($RoomId)"
         return $true
     }
     catch {
+        if ($tempFile -and (Test-Path $tempFile.FullName)) {
+            Remove-Item -Path $tempFile.FullName -Force -ErrorAction SilentlyContinue
+        }
         Write-Error "Error creando sala $RoomId`: $($_.Exception.Message)"
         return $false
     }

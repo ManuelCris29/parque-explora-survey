@@ -74,6 +74,7 @@ export default function AdminPanel() {
   const [viewingUser, setViewingUser] = useState<User | null>(null)
   const [viewingSurvey, setViewingSurvey] = useState<Survey | null>(null)
   const [rooms, setRooms] = useState<string[]>([])
+  const [creatingUser, setCreatingUser] = useState(false)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY
@@ -200,9 +201,33 @@ export default function AdminPanel() {
   }
 
   // CRUD Functions for Users
+  const createUser = async (userData: { cedula: string, nombre: string, email: string, telefono: string }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'x-api-key': API_KEY!,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      })
+      if (response.ok) {
+        toast.success('Usuario creado exitosamente')
+        setCreatingUser(false)
+        loadUsers()
+        loadDashboardData()
+      } else {
+        const errorData = await response.json()
+        toast.error(errorData.error || 'Error al crear usuario')
+      }
+    } catch {
+      toast.error('Error al crear usuario')
+    }
+  }
+
   const getUserById = async (cedula: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${cedula}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${cedula}`, {
         headers: {
           'x-api-key': API_KEY!,
           'Content-Type': 'application/json'
@@ -211,7 +236,7 @@ export default function AdminPanel() {
       
       if (response.ok) {
         const data = await response.json()
-        return data.user
+        return data.data
       }
     } catch (error) {
       console.error('Error getting user:', error)
@@ -221,7 +246,7 @@ export default function AdminPanel() {
 
   const updateUser = async (cedula: string, userData: Partial<User>) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${cedula}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${cedula}`, {
         method: 'PUT',
         headers: {
           'x-api-key': API_KEY!,
@@ -234,7 +259,7 @@ export default function AdminPanel() {
         const data = await response.json()
         toast.success('Usuario actualizado exitosamente')
         loadUsers()
-        return data.user
+        return data.data
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Error al actualizar usuario')
@@ -251,7 +276,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/${cedula}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${cedula}`, {
         method: 'DELETE',
         headers: {
           'x-api-key': API_KEY!,
@@ -277,7 +302,7 @@ export default function AdminPanel() {
   // CRUD Functions for Surveys
   const getSurveyById = async (surveyId: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/surveys/${surveyId}`, {
+      const response = await fetch(`${API_BASE_URL}/surveys/${surveyId}`, {
         headers: {
           'x-api-key': API_KEY!,
           'Content-Type': 'application/json'
@@ -286,7 +311,7 @@ export default function AdminPanel() {
       
       if (response.ok) {
         const data = await response.json()
-        return data.survey
+        return data.data
       }
     } catch (error) {
       console.error('Error getting survey:', error)
@@ -296,7 +321,7 @@ export default function AdminPanel() {
 
   const updateSurvey = async (surveyId: string, surveyData: Partial<Survey>) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/surveys/${surveyId}`, {
+      const response = await fetch(`${API_BASE_URL}/surveys/${surveyId}`, {
         method: 'PUT',
         headers: {
           'x-api-key': API_KEY!,
@@ -309,7 +334,7 @@ export default function AdminPanel() {
         const data = await response.json()
         toast.success('Encuesta actualizada exitosamente')
         loadSurveys()
-        return data.survey
+        return data.data
       } else {
         const errorData = await response.json()
         toast.error(errorData.error || 'Error al actualizar encuesta')
@@ -326,7 +351,7 @@ export default function AdminPanel() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/surveys/${surveyId}`, {
+      const response = await fetch(`${API_BASE_URL}/surveys/${surveyId}`, {
         method: 'DELETE',
         headers: {
           'x-api-key': API_KEY!,
@@ -523,7 +548,7 @@ export default function AdminPanel() {
                     />
                   </div>
                   <button
-                    onClick={() => toast.info('Función de crear usuario próximamente')}
+                    onClick={() => setCreatingUser(true)}
                     className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200"
                   >
                     <Plus className="w-4 h-4" />
@@ -984,7 +1009,7 @@ export default function AdminPanel() {
               e.preventDefault()
               const formData = new FormData(e.currentTarget)
               const surveyData = {
-                estado: formData.get('estado') as string,
+                estado: formData.get('estado') as Survey['estado'],
                 calificacionGeneral: formData.get('calificacionGeneral') ? parseInt(formData.get('calificacionGeneral') as string) : undefined,
                 comentarios: formData.get('comentarios') as string
               }
@@ -1044,6 +1069,65 @@ export default function AdminPanel() {
                     onClick={() => setEditingSurvey(null)}
                     className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200"
                   >
+                    <X className="w-4 h-4" />
+                    <span>Cancelar</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Crear Usuario */}
+      {creatingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Crear Nuevo Usuario</h3>
+              <button onClick={() => setCreatingUser(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const formData = new FormData(e.currentTarget)
+              await createUser({
+                cedula: formData.get('cedula') as string,
+                nombre: formData.get('nombre') as string,
+                email: formData.get('email') as string,
+                telefono: (formData.get('telefono') as string) || ''
+              })
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cédula *</label>
+                  <input name="cedula" type="text" required pattern="[0-9]+" placeholder="Ej: 12345678"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo *</label>
+                  <input name="nombre" type="text" required placeholder="Ej: Juan Pérez"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <input name="email" type="email" required placeholder="Ej: juan@email.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                  <input name="telefono" type="text" placeholder="Ej: 3001234567"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                </div>
+                <div className="flex space-x-3 pt-2">
+                  <button type="submit"
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+                    <Save className="w-4 h-4" />
+                    <span>Crear Usuario</span>
+                  </button>
+                  <button type="button" onClick={() => setCreatingUser(false)}
+                    className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-200">
                     <X className="w-4 h-4" />
                     <span>Cancelar</span>
                   </button>

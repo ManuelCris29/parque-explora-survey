@@ -42,7 +42,7 @@ export default function SurveyPage() {
       
       if (roomsResponse.ok) {
         const roomsData = await roomsResponse.json()
-        setRooms(roomsData.data || [])
+        setRooms(roomsData.rooms || roomsData.data || [])
       }
 
       // Cargar datos de la encuesta y usuario
