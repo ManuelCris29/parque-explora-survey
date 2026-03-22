@@ -115,8 +115,10 @@ npm install
 ```powershell
 # Reemplaza TU_URL_AQUI con la URL que copiaste en el paso anterior:
 echo "NEXT_PUBLIC_API_URL=https://TU_URL_AQUI/dev/" > .env.local
-echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
+echo "NEXT_PUBLIC_API_KEY=REPLACE_WITH_API_KEY" >> .env.local
 ```
+
+**Nota de seguridad:** Solicita `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_API_KEY` al administrador del proyecto.
 
 ### PASO 7: Ejecutar el Sistema
 
@@ -389,7 +391,7 @@ cp env.example .env.local
 # Editar .env.local y reemplazar YOUR_API_GATEWAY_URL con tu URL real
 # O crear manualmente:
 echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
-echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
+echo "NEXT_PUBLIC_API_KEY=REPLACE_WITH_API_KEY" >> .env.local
 
 # Ejecutar en desarrollo
 npm run dev
@@ -416,7 +418,7 @@ aws cloudformation describe-stacks --stack-name parque-explora-survey-dev --regi
 # O manualmente con cURL
 curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
   -H "Content-Type: application/json" \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
+  -H "x-api-key: REPLACE_WITH_API_KEY" \
   -d '{"cedula":"1234567890","nombre":"Usuario Prueba","email":"prueba@test.com","telefono":"3001234567"}'
 ```
 
@@ -442,7 +444,7 @@ curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
 ### Autenticación
 Todos los endpoints requieren el header:
 ```
-x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd
+x-api-key: REPLACE_WITH_API_KEY
 ```
 
 ### Ejemplo de Uso
@@ -450,12 +452,12 @@ x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd
 # Crear usuario
 curl -X POST https://YOUR_API_URL/dev/users \
   -H "Content-Type: application/json" \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
+  -H "x-api-key: REPLACE_WITH_API_KEY" \
   -d '{"cedula":"1234567890","nombre":"Juan Pérez","email":"juan@email.com","telefono":"3001234567"}'
 
 # Buscar usuario
 curl -X GET https://YOUR_API_URL/dev/users/1234567890 \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 ```
 
 ## 🧪 Testing y Verificación
@@ -467,7 +469,7 @@ aws cloudformation describe-stacks --stack-name parque-explora-survey-dev --regi
 
 # Probar API directamente
 curl -X GET https://YOUR_API_URL/dev/rooms \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 ```
 
 ### Verificar Frontend
@@ -497,7 +499,7 @@ sam local invoke UserServiceFunction
 
 # Verificar datos creados
 curl -X GET https://YOUR_API_URL/dev/users \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 ```
 
 ## 📱 Flujo de Usuario
@@ -636,7 +638,7 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 ```
 
 #### Error de CORS en el navegador
-- Verificar que la API Key sea correcta: `jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd`
+- Verificar que la API Key sea correcta (solicitar al admin): `REPLACE_WITH_API_KEY`
 - Verificar que la URL de la API sea correcta
 - Limpiar cache del navegador
 

@@ -44,7 +44,7 @@ abc123      → 123
 ```bash
 # Request válido
 curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
+  -H "x-api-key: REPLACE_WITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "cedula": "12345678",
@@ -59,13 +59,13 @@ curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users \
 ```bash
 # Usuario existente
 curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users/12345678 \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 
 # Response esperado: 200 OK con datos del usuario
 
 # Usuario no existente
 curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users/99999999 \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 
 # Response esperado: 404 Not Found
 ```
@@ -74,7 +74,7 @@ curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/users/999
 ```bash
 # Crear encuesta para usuario existente
 curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
+  -H "x-api-key: REPLACE_WITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "cedula": "12345678"
@@ -87,7 +87,7 @@ curl -X POST https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys 
 ```bash
 # Encuesta existente
 curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/user/12345678 \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+  -H "x-api-key: REPLACE_WITH_API_KEY"
 
 # Response esperado: 200 OK con datos de encuesta y usuario
 ```
@@ -96,7 +96,7 @@ curl -X GET https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/u
 ```bash
 # Actualizar encuesta
 curl -X PUT https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/survey-uuid \
-  -H "x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" \
+  -H "x-api-key: REPLACE_WITH_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "estado": "completed",
@@ -111,7 +111,7 @@ curl -X PUT https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/surveys/s
 
 #### ✅ API Key Válida
 ```bash
-x-api-key: jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd
+x-api-key: REPLACE_WITH_API_KEY
 ```
 
 #### ❌ API Key Inválida
@@ -206,7 +206,7 @@ x-api-key: invalid-key
     },
     {
       "key": "apiKey",
-      "value": "jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd"
+      "value": "REPLACE_WITH_API_KEY"
     }
   ]
 }

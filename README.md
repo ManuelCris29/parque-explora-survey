@@ -20,7 +20,8 @@ Si la API ya existe en AWS (como en tu otro equipo), **no necesitas desplegar AW
 
 1. Instala dependencias del frontend.
 2. Crea `frontend/.env.local` desde `frontend/env.example`.
-3. Ejecuta en local.
+3. Solicita al administrador del proyecto los valores de `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_API_KEY`.
+4. Ejecuta en local.
 
 ```powershell
 npm --prefix "frontend" install
@@ -29,6 +30,8 @@ npm --prefix "frontend" run dev
 ```
 
 Luego abre: `http://localhost:3000`
+
+> Seguridad: este repositorio usa placeholders en archivos versionados. Las credenciales reales deben compartirse por canal seguro y no deben subirse a Git.
 
 ## ¿Cuándo sí necesitas AWS CLI/SAM?
 Solo si vas a:

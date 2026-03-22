@@ -139,13 +139,13 @@ npm install
 ```powershell
 # Usar la URL real del proyecto:
 echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
-echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
+echo "NEXT_PUBLIC_API_KEY=REPLACE_WITH_API_KEY" >> .env.local
 ```
 
 **Tu configuración real:**
 ```powershell
 echo "NEXT_PUBLIC_API_URL=https://eu0agbxch5.execute-api.us-east-1.amazonaws.com/dev/" > .env.local
-echo "NEXT_PUBLIC_API_KEY=jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd" >> .env.local
+echo "NEXT_PUBLIC_API_KEY=REPLACE_WITH_API_KEY" >> .env.local
 ```
 
 ---
