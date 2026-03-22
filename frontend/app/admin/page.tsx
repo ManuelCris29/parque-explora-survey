@@ -255,6 +255,14 @@ export default function AdminPanel() {
     }
   }
 
+  const getSentimentLabel = (score: number) => {
+    if (score >= 1.5) return 'Muy positivo'
+    if (score >= 0.5) return 'Positivo'
+    if (score > -0.5) return 'Neutral'
+    if (score > -1.5) return 'Negativo'
+    return 'Muy negativo'
+  }
+
   useEffect(() => {
     if (activeTab === 'dashboard') {
       loadDashboardData()
@@ -741,6 +749,9 @@ export default function AdminPanel() {
                   <div className="rounded-lg border bg-purple-50 border-purple-200 p-4">
                     <p className="text-sm text-purple-700 font-medium">Sentimiento Comentarios</p>
                     <p className="text-2xl font-bold text-purple-900">{automatedInsights.commentSentimentScore}</p>
+                    <p className="text-xs text-purple-700 mt-1">
+                      {getSentimentLabel(automatedInsights.commentSentimentScore)} (escala -2 a 2)
+                    </p>
                   </div>
                 </div>
 

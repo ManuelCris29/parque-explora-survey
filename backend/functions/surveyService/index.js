@@ -158,6 +158,30 @@ const buildHeuristicInsights = (surveys, rooms) => {
     };
 };
 
+const normalizeSentimentScore = (value, fallback) => {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return fallback;
+    }
+    const clamped = Math.max(-2, Math.min(2, value));
+    return Math.round(clamped * 100) / 100;
+};
+
+const resolveHappinessLevel = (averageRating, sentimentScore, openAiLevel, fallbackLevel) => {
+    if (['Alta', 'Media', 'Baja'].includes(openAiLevel)) {
+        return openAiLevel;
+    }
+
+    if (averageRating >= 4.2 && sentimentScore >= 0.5) {
+        return 'Alta';
+    }
+
+    if (averageRating < 3.3 || sentimentScore < 0) {
+        return 'Baja';
+    }
+
+    return fallbackLevel || 'Media';
+};
+
 const enrichInsightsWithOpenAI = async (heuristicInsights, surveys) => {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -202,11 +226,11 @@ const enrichInsightsWithOpenAI = async (heuristicInsights, surveys) => {
             body: JSON.stringify({
                 model,
                 response_format: { type: 'json_object' },
-                temperature: 0.2,
+                temperature: 0,
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres un analista de experiencia de visitantes. Devuelve SOLO JSON con: commentSentimentScore (numero entre -2 y 2), happinessLevel (Alta|Media|Baja), aiFindings (array de 3 insights accionables en español).'
+                        content: 'Eres un analista de experiencia de visitantes. Devuelve SOLO JSON con: commentSentimentScore (numero entre -2 y 2), happinessLevel (Alta|Media|Baja), aiFindings (array de 3 insights accionables en español). No incluyas otros campos.'
                     },
                     {
                         role: 'user',
@@ -234,14 +258,18 @@ const enrichInsightsWithOpenAI = async (heuristicInsights, surveys) => {
 
         const parsed = JSON.parse(content);
 
+        const aiSentiment = normalizeSentimentScore(parsed.commentSentimentScore, heuristicInsights.commentSentimentScore);
+        const aiHappinessLevel = resolveHappinessLevel(
+            heuristicInsights.averageRating,
+            aiSentiment,
+            parsed.happinessLevel,
+            heuristicInsights.happinessLevel
+        );
+
         const merged = {
             ...heuristicInsights,
-            commentSentimentScore: typeof parsed.commentSentimentScore === 'number'
-                ? parsed.commentSentimentScore
-                : heuristicInsights.commentSentimentScore,
-            happinessLevel: ['Alta', 'Media', 'Baja'].includes(parsed.happinessLevel)
-                ? parsed.happinessLevel
-                : heuristicInsights.happinessLevel,
+            commentSentimentScore: aiSentiment,
+            happinessLevel: aiHappinessLevel,
             aiFindings: Array.isArray(parsed.aiFindings) && parsed.aiFindings.length > 0
                 ? parsed.aiFindings.slice(0, 4)
                 : heuristicInsights.aiFindings

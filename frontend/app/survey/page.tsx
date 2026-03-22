@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ArrowLeft, Star, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
-export default function SurveyPage() {
+function SurveyPageContent() {
   const searchParams = useSearchParams()
   const cedula = searchParams.get('cedula')
 
@@ -470,5 +470,22 @@ export default function SurveyPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+const SurveyPageFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Cargando encuesta...</p>
+    </div>
+  </div>
+)
+
+export default function SurveyPage() {
+  return (
+    <Suspense fallback={<SurveyPageFallback />}>
+      <SurveyPageContent />
+    </Suspense>
   )
 }
