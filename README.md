@@ -7,6 +7,14 @@ Sistema de encuestas (Frontend `Next.js` + Backend Serverless en AWS con `API Ga
 - Frontend en `frontend/`.
 - Documentación completa organizada en `docs/guias-retomar-proyecto/`.
 
+## Automatización de insights (OpenAI + Heurística)
+El proyecto tiene automatización dual para el módulo de insights:
+
+- **Proveedor principal: OpenAI** (`gpt-4o-mini`) para generar recomendaciones y análisis enriquecido.
+- **Fallback automático: Heurística local** cuando OpenAI no está disponible (por cuota, rate limit, credenciales o error temporal).
+
+Esto garantiza continuidad operativa: siempre hay respuesta de insights, incluso si el proveedor externo falla.
+
 ## Inicio rápido (solo frontend, usando AWS ya desplegado)
 Si la API ya existe en AWS (como en tu otro equipo), **no necesitas desplegar AWS de nuevo**.
 
