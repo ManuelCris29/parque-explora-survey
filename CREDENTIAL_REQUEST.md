@@ -133,7 +133,7 @@ Reemplaza:
 **Ejemplo real:**
 ```toml
 [default.deploy.parameters]
-parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd\" OpenAIApiKey=\"sk-proj-xxxxx...\" OpenAIModel=\"gpt-4o-mini\""
+parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"YOUR_API_GATEWAY_KEY_HERE\" OpenAIApiKey=\"YOUR_OPENAI_KEY_HERE\" OpenAIModel=\"gpt-4o-mini\""
 ```
 
 #### Paso 2: Desplegar a AWS
