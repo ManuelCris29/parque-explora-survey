@@ -37,9 +37,32 @@ Luego abre: `http://localhost:3000`
 
 Este proyecto requiere credenciales para ejecutar el frontend. **No están incluidas en el repositorio por seguridad.**
 
+### 📁 Dónde Configurar las Credenciales
+
+Cuando recibas las credenciales del administrador, **edita este archivo:**
+
+```
+frontend/.env.local
+```
+
+Y reemplaza los placeholders con tus valores reales:
+
+```env
+NEXT_PUBLIC_API_URL=<credencial-recibida>
+NEXT_PUBLIC_API_KEY=<credencial-recibida>
+```
+
+**Ejemplo:**
+```env
+NEXT_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/
+NEXT_PUBLIC_API_KEY=tu_clave_api_real_aqui
+```
+
+> ⚠️ **Importante:** El archivo `frontend/.env.local` está protegido por `.gitignore` y **nunca** debe subirse a Git.
+
 👉 **[Ver: CREDENTIAL_REQUEST.md](./CREDENTIAL_REQUEST.md)** para:
 - Solicitar credenciales al administrador
-- Pasos de configuración
+- Pasos completos de configuración
 - Checklist de validación
 
 ## ¿Cuándo sí necesitas AWS CLI/SAM?
