@@ -33,6 +33,15 @@ Luego abre: `http://localhost:3000`
 
 > Seguridad: este repositorio usa placeholders en archivos versionados. Las credenciales reales deben compartirse por canal seguro y no deben subirse a Git.
 
+## 🔑 Obtener Credenciales de Acceso
+
+Este proyecto requiere credenciales para ejecutar el frontend. **No están incluidas en el repositorio por seguridad.**
+
+👉 **[Ver: CREDENTIAL_REQUEST.md](./CREDENTIAL_REQUEST.md)** para:
+- Solicitar credenciales al administrador
+- Pasos de configuración
+- Checklist de validación
+
 ## ¿Cuándo sí necesitas AWS CLI/SAM?
 Solo si vas a:
 - Desplegar backend/infrastructura (`sam build`, `sam deploy`).
