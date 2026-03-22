@@ -1,93 +1,85 @@
 # Parque Explora Survey
 
-Sistema de encuestas (Frontend `Next.js` + Backend Serverless en AWS con `API Gateway`, `Lambda` y `DynamoDB`).
+Plataforma de **encuestas de satisfacción para visitantes** con panel administrativo, analítica operativa e insights automáticos.
 
-## Estado del repo
-- Backend e infraestructura definidos en `template.yaml`.
-- Frontend en `frontend/`.
-- Documentación completa organizada en `docs/guias-retomar-proyecto/`.
+**Stack principal:** `Next.js` + `AWS API Gateway` + `AWS Lambda` + `DynamoDB` + `OpenAI` (con fallback heurístico).
 
-## Automatización de insights (OpenAI + Heurística)
-El proyecto tiene automatización dual para el módulo de insights:
+## ¿Qué resuelve este proyecto?
+- Permite identificar al visitante por cédula y completar su encuesta.
+- Centraliza administración de usuarios y encuestas en un panel web.
+- Convierte respuestas en métricas accionables para operación del parque.
+- Prioriza decisiones con un módulo de insights IA + reglas estadísticas transparentes.
 
-- **Proveedor principal: OpenAI** (`gpt-4o-mini`) para generar recomendaciones y análisis enriquecido.
-- **Fallback automático: Heurística local** cuando OpenAI no está disponible (por cuota, rate limit, credenciales o error temporal).
+## Vista general del sistema
+```mermaid
+flowchart LR
+	A[Visitante / Admin] --> B[Frontend Next.js]
+	B --> C[API Gateway]
+	C --> D[Lambda userService]
+	C --> E[Lambda surveyService]
+	C --> F[Lambda roomService]
+	D --> G[(DynamoDB)]
+	E --> G
+	F --> G
+	E --> H[OpenAI]
+```
 
-Esto garantiza continuidad operativa: siempre hay respuesta de insights, incluso si el proveedor externo falla.
+## Galería de pantallas (qué se ve y para qué sirve)
 
-## Inicio rápido (solo frontend, usando AWS ya desplegado)
-Si la API ya existe en AWS (como en tu otro equipo), **no necesitas desplegar AWS de nuevo**.
+### 1) Inicio de encuesta
+![Inicio del sistema](./docs/assets/screenshots/home.svg)
 
-1. Instala dependencias del frontend.
-2. Crea `frontend/.env.local` desde `frontend/env.example`.
-3. Solicita al administrador del proyecto los valores de `NEXT_PUBLIC_API_URL` y `NEXT_PUBLIC_API_KEY`.
-4. Ejecuta en local.
+**Uso:** punto de entrada para visitantes; valida cédula y dirige a la encuesta correspondiente.
 
+### 2) Dashboard administrativo
+![Dashboard administrativo](./docs/assets/screenshots/admin-dashboard.svg)
+
+**Uso:** monitoreo ejecutivo (encuestas completadas, felicidad, sentimiento, salas más/menos visitadas y prioridades de mejora).
+
+### 3) Gestión de usuarios
+![Módulo de usuarios](./docs/assets/screenshots/admin-users.svg)
+
+**Uso:** consulta, búsqueda y mantenimiento de usuarios para asegurar trazabilidad de encuestas.
+
+### 4) Gestión de encuestas
+![Módulo de encuestas](./docs/assets/screenshots/admin-surveys.svg)
+
+**Uso:** seguimiento del estado de encuestas, auditoría de respuestas y acciones operativas.
+
+## Insights automatizados (IA + transparencia)
+- **Proveedor principal:** `OpenAI` (`gpt-4o-mini`) para insights enriquecidos.
+- **Fallback automático:** heurística local si OpenAI no está disponible.
+- **Transparencia estadística:** el endpoint de insights devuelve metadatos (`meta`) con muestra, metodología, versión de fórmula y métricas de calidad.
+
+## Inicio rápido (frontend usando API ya desplegada)
 ```powershell
 npm --prefix "frontend" install
 Copy-Item "frontend\env.example" "frontend\.env.local" -Force
 npm --prefix "frontend" run dev
 ```
 
-Luego abre: `http://localhost:3000`
+Abrir en navegador: `http://localhost:3000`
 
-> Seguridad: este repositorio usa placeholders en archivos versionados. Las credenciales reales deben compartirse por canal seguro y no deben subirse a Git.
+> Seguridad: las credenciales reales no se versionan. Usa placeholders en Git y configura valores reales solo en `frontend/.env.local`.
 
-## 🔑 Obtener Credenciales de Acceso
-
-Este proyecto requiere credenciales para ejecutar el frontend. **No están incluidas en el repositorio por seguridad.**
-
-### 📁 Dónde Configurar las Credenciales
-
-Cuando recibas las credenciales del administrador, **edita este archivo:**
-
-```
-frontend/.env.local
-```
-
-Y reemplaza los placeholders con tus valores reales:
+## Configuración de credenciales
+Editar `frontend/.env.local` con:
 
 ```env
 NEXT_PUBLIC_API_URL=<credencial-recibida>
 NEXT_PUBLIC_API_KEY=<credencial-recibida>
 ```
 
-**Ejemplo:**
-```env
-NEXT_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/dev/
-NEXT_PUBLIC_API_KEY=tu_clave_api_real_aqui
-```
-
-> ⚠️ **Importante:** El archivo `frontend/.env.local` está protegido por `.gitignore` y **nunca** debe subirse a Git.
-
-👉 **[Ver: CREDENTIAL_REQUEST.md](./CREDENTIAL_REQUEST.md)** para:
-- Solicitar credenciales al administrador
-- Pasos completos de configuración
-- Checklist de validación
-
-## ¿Cuándo sí necesitas AWS CLI/SAM?
-Solo si vas a:
-- Desplegar backend/infrastructura (`sam build`, `sam deploy`).
-- Crear/editar recursos AWS (API Gateway, Lambda, DynamoDB).
-- Ejecutar backend local con SAM.
+Referencia de onboarding seguro: `CREDENTIAL_REQUEST.md`.
 
 ## Estructura principal
-- `frontend/`: aplicación web Next.js.
+- `frontend/`: aplicación web (`Next.js`, `TypeScript`, `Tailwind`).
 - `backend/functions/`: lambdas (`userService`, `surveyService`, `roomService`).
-- `template.yaml`: infraestructura serverless.
-- `docs/guias-retomar-proyecto/`: documentación completa organizada.
+- `template.yaml`: infraestructura serverless con AWS SAM.
+- `docs/`: documentación técnica y operativa del proyecto.
 
-## Documentación
-### Punto de entrada recomendado
+## Documentación recomendada
 - `docs/guias-retomar-proyecto/01-inicio/00_COMIENZA_AQUI.md`
-
-### Referencias clave
 - `docs/guias-retomar-proyecto/01-inicio/RESUMEN_UNA_PAGINA.md`
-- `docs/guias-retomar-proyecto/01-inicio/QUICK_REFERENCE.md`
-- `docs/guias-retomar-proyecto/02-explicaciones/EXPLICACION_SERVICIOS_AWS.md`
 - `docs/guias-retomar-proyecto/03-practica/GUIA_CONTINUAR_DESARROLLO.md`
 - `docs/guias-retomar-proyecto/04-indices/INDICE_DOCUMENTACION.md`
-
-## Nota
-El contenido largo del README original quedó en:
-- `docs/guias-retomar-proyecto/05-docs-raiz/04-inicio/README.md`

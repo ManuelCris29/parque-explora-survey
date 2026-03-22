@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8fafc"/>
+  <rect x="0" y="0" width="1200" height="72" fill="#ffffff"/>
+  <text x="24" y="45" font-family="Segoe UI, Arial" font-size="34" font-weight="700" fill="#0f172a">Panel de Administración · Encuestas</text>
+  <rect x="24" y="98" width="1150" height="500" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="44" y="140" font-family="Segoe UI, Arial" font-size="28" font-weight="700" fill="#0f172a">Gestión de Encuestas</text>
+  <rect x="900" y="112" width="260" height="44" rx="10" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="920" y="140" font-family="Segoe UI, Arial" font-size="24" fill="#94a3b8">Buscar encuesta...</text>
+  <line x1="40" y1="178" x2="1170" y2="178" stroke="#e2e8f0"/>
+  <text x="46" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">ID</text>
+  <text x="180" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">USUARIO</text>
+  <text x="360" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">ESTADO</text>
+  <text x="520" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">CALIFICACIÓN</text>
+  <text x="730" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">FECHA</text>
+  <text x="980" y="210" font-family="Segoe UI, Arial" font-size="20" fill="#64748b">ACCIONES</text>
+  <line x1="40" y1="230" x2="1170" y2="230" stroke="#e2e8f0"/>
+  <text x="46" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">6c96e274...</text>
+  <text x="180" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">1035437457</text>
+  <text x="360" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#16a34a">✓ Completada</text>
+  <text x="520" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">5/5</text>
+  <text x="730" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">17/03/2026</text>
+  <text x="980" y="264" font-family="Segoe UI, Arial" font-size="24" fill="#2563eb">👁 ✏ 🗑</text>
+  <line x1="40" y1="286" x2="1170" y2="286" stroke="#e2e8f0"/>
+  <text x="46" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">a83bdba2...</text>
+  <text x="180" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">1223565632</text>
+  <text x="360" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#16a34a">✓ Completada</text>
+  <text x="520" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">5/5</text>
+  <text x="730" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#0f172a">21/03/2026</text>
+  <text x="980" y="320" font-family="Segoe UI, Arial" font-size="24" fill="#2563eb">👁 ✏ 🗑</text>
+  <line x1="40" y1="342" x2="1170" y2="342" stroke="#e2e8f0"/>
+  <text x="46" y="377" font-family="Segoe UI, Arial" font-size="24" fill="#334155">... gestión operativa, seguimiento de estados y auditoría ...</text>
+</svg>
