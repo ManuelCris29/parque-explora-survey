@@ -9,7 +9,7 @@ s3_prefix = "parque-explora-survey"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Environment=dev ApiKeyValue=REPLACE_WITH_API_GATEWAY_KEY"
+parameter_overrides = "Environment=dev ApiKeyValue=parque-explora-api-key-2024"
 image_repositories = []
 
 [default.build]
