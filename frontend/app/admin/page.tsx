@@ -47,6 +47,31 @@ interface Survey {
   user?: User
 }
 
+interface Room {
+  roomId: string
+  nombre: string
+  descripcion?: string
+  categoria?: string
+}
+
+interface InsightItem {
+  roomId: string
+  roomName: string
+  count: number
+}
+
+interface AutomatedInsights {
+  mostVisited: InsightItem[]
+  leastVisited: InsightItem[]
+  mostRequestedRenovation: InsightItem[]
+  averageRating: number
+  happinessLevel: string
+  commentSentimentScore: number
+  totalCompletedSurveys: number
+  aiFindings: string[]
+  provider?: 'openai' | 'heuristic'
+}
+
 interface DashboardStats {
   totalUsers: number
   totalSurveys: number
@@ -73,11 +98,162 @@ export default function AdminPanel() {
   const [editingSurvey, setEditingSurvey] = useState<Survey | null>(null)
   const [viewingUser, setViewingUser] = useState<User | null>(null)
   const [viewingSurvey, setViewingSurvey] = useState<Survey | null>(null)
-  const [rooms, setRooms] = useState<string[]>([])
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [automatedInsights, setAutomatedInsights] = useState<AutomatedInsights>({
+    mostVisited: [],
+    leastVisited: [],
+    mostRequestedRenovation: [],
+    averageRating: 0,
+    happinessLevel: 'Sin datos',
+    commentSentimentScore: 0,
+    totalCompletedSurveys: 0,
+    aiFindings: [],
+    provider: 'heuristic'
+  })
   const [creatingUser, setCreatingUser] = useState(false)
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
   const API_KEY = process.env.NEXT_PUBLIC_API_KEY
+
+  const normalizeComment = (text: string) =>
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+
+  const countByRoom = (roomIds: string[]) => {
+    const counter: Record<string, number> = {}
+    roomIds.forEach((roomId) => {
+      counter[roomId] = (counter[roomId] || 0) + 1
+    })
+    return counter
+  }
+
+  const mapToInsightItems = (counter: Record<string, number>, roomCatalog: Room[], includeZero = false) => {
+    const roomNameById = roomCatalog.reduce<Record<string, string>>((acc, room) => {
+      acc[room.roomId] = room.nombre
+      return acc
+    }, {})
+
+    const baseItems = includeZero
+      ? roomCatalog.map((room) => ({
+          roomId: room.roomId,
+          roomName: room.nombre,
+          count: counter[room.roomId] || 0
+        }))
+      : Object.entries(counter).map(([roomId, count]) => ({
+          roomId,
+          roomName: roomNameById[roomId] || roomId,
+          count
+        }))
+
+    return baseItems
+  }
+
+  const buildAutomatedInsights = (allSurveys: Survey[], roomCatalog: Room[]): AutomatedInsights => {
+    const completedSurveys = allSurveys.filter((survey) => survey.estado === 'completed')
+
+    if (completedSurveys.length === 0) {
+      return {
+        mostVisited: [],
+        leastVisited: [],
+        mostRequestedRenovation: [],
+        averageRating: 0,
+        happinessLevel: 'Sin datos',
+        commentSentimentScore: 0,
+        totalCompletedSurveys: 0,
+        aiFindings: ['Aún no hay encuestas completadas para generar insights automáticos.'],
+        provider: 'heuristic'
+      }
+    }
+
+    const allVisitedRooms = completedSurveys.flatMap((survey) => survey.salasVisitadas || [])
+    const allRenovationRooms = completedSurveys.flatMap((survey) => survey.salasParaRenovar || [])
+
+    const visitedCounter = countByRoom(allVisitedRooms)
+    const renovationCounter = countByRoom(allRenovationRooms)
+
+    const visitedItems = mapToInsightItems(visitedCounter, roomCatalog, true).sort((a, b) => b.count - a.count)
+    const mostVisited = visitedItems.filter((item) => item.count > 0).slice(0, 3)
+    const leastVisited = visitedItems.filter((item) => item.count >= 0).sort((a, b) => a.count - b.count).slice(0, 3)
+
+    const mostRequestedRenovation = mapToInsightItems(renovationCounter, roomCatalog)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+
+    const ratings = completedSurveys
+      .map((survey) => survey.calificacionGeneral)
+      .filter((rating): rating is number => typeof rating === 'number')
+
+    const averageRating = ratings.length
+      ? ratings.reduce((acc, current) => acc + current, 0) / ratings.length
+      : 0
+
+    const positiveWords = [
+      'excelente', 'genial', 'increible', 'increíble', 'maravilloso', 'recomendado', 'encanto', 'gusto',
+      'feliz', 'agradable', 'divertido', 'bueno', 'espectacular', 'fantastico', 'fantástico'
+    ]
+    const negativeWords = [
+      'malo', 'regular', 'aburrido', 'lento', 'fila', 'espera', 'calor', 'frio', 'frío', 'danado', 'dañado',
+      'sucio', 'costoso', 'caro', 'mejorar', 'renovar', 'daño', 'fallo', 'fallas'
+    ]
+
+    let sentimentScore = 0
+    completedSurveys.forEach((survey) => {
+      if (survey.calificacionGeneral) {
+        sentimentScore += (survey.calificacionGeneral - 3) * 0.9
+      }
+
+      const normalized = normalizeComment(survey.comentarios || '')
+      positiveWords.forEach((word) => {
+        if (normalized.includes(word)) {
+          sentimentScore += 0.5
+        }
+      })
+      negativeWords.forEach((word) => {
+        if (normalized.includes(word)) {
+          sentimentScore -= 0.5
+        }
+      })
+    })
+
+    const commentSentimentScore = Math.round((sentimentScore / completedSurveys.length) * 100) / 100
+
+    let happinessLevel = 'Media'
+    if (averageRating >= 4.2 && commentSentimentScore >= 0.5) {
+      happinessLevel = 'Alta'
+    } else if (averageRating < 3.3 || commentSentimentScore < 0) {
+      happinessLevel = 'Baja'
+    }
+
+    const aiFindings: string[] = []
+
+    if (mostVisited.length > 0) {
+      aiFindings.push(`La sala más visitada es ${mostVisited[0].roomName} con ${mostVisited[0].count} visitas registradas.`)
+    }
+
+    if (mostRequestedRenovation.length > 0) {
+      aiFindings.push(`La mayor prioridad de mejora es ${mostRequestedRenovation[0].roomName}, sugerida ${mostRequestedRenovation[0].count} veces para renovación.`)
+    }
+
+    if (averageRating >= 4) {
+      aiFindings.push('La satisfacción general es positiva; conviene reforzar las fortalezas actuales en salas mejor valoradas.')
+    } else {
+      aiFindings.push('La satisfacción general requiere intervención; se recomienda priorizar acciones sobre salas con más solicitudes de cambio.')
+    }
+
+    return {
+      mostVisited,
+      leastVisited,
+      mostRequestedRenovation,
+      averageRating: Math.round(averageRating * 10) / 10,
+      happinessLevel,
+      commentSentimentScore,
+      totalCompletedSurveys: completedSurveys.length,
+      aiFindings,
+      provider: 'heuristic'
+    }
+  }
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -96,31 +272,35 @@ export default function AdminPanel() {
   const loadDashboardData = async () => {
     setLoading(true)
     try {
-      // Cargar estadísticas generales
-      const usersResponse = await fetch(`${API_BASE_URL}/users`, {
-        headers: {
-          'x-api-key': API_KEY!,
-          'Content-Type': 'application/json'
-        }
-      })
+      const commonHeaders = {
+        'x-api-key': API_KEY!,
+        'Content-Type': 'application/json'
+      }
 
-      const surveysResponse = await fetch(`${API_BASE_URL}/surveys`, {
-        headers: {
-          'x-api-key': API_KEY!,
-          'Content-Type': 'application/json'
-        }
-      })
+      // Cargar estadísticas generales + datos para analítica automatizada
+      const [usersResponse, surveysResponse, roomsResponse, insightsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/users`, { headers: commonHeaders }),
+        fetch(`${API_BASE_URL}/surveys`, { headers: commonHeaders }),
+        fetch(`${API_BASE_URL}/rooms`, { headers: commonHeaders }),
+        fetch(`${API_BASE_URL}/surveys/insights/ai`, { headers: commonHeaders })
+      ])
 
       // Calcular estadísticas
       const usersData = await usersResponse.json()
       const surveysData = await surveysResponse.json()
+      const roomsData = roomsResponse.ok ? await roomsResponse.json() : { rooms: [] }
+
+      const catalogRooms: Room[] = roomsData.rooms || []
+      const surveyList: Survey[] = surveysData.surveys || []
+      setSurveys(surveyList)
+      setRooms(catalogRooms)
       
       const totalUsers = usersData.users?.length || 0
-      const totalSurveys = surveysData.surveys?.length || 0
-      const completedSurveys = surveysData.surveys?.filter((s: Survey) => s.estado === 'completed').length || 0
-      const pendingSurveys = surveysData.surveys?.filter((s: Survey) => s.estado === 'pending' || s.estado === 'in_progress').length || 0
+      const totalSurveys = surveyList.length || 0
+      const completedSurveys = surveyList.filter((s: Survey) => s.estado === 'completed').length || 0
+      const pendingSurveys = surveyList.filter((s: Survey) => s.estado === 'pending' || s.estado === 'in_progress').length || 0
       
-      const ratings = surveysData.surveys?.filter((s: Survey) => s.calificacionGeneral).map((s: Survey) => s.calificacionGeneral) || []
+      const ratings = surveyList.filter((s: Survey) => s.calificacionGeneral).map((s: Survey) => s.calificacionGeneral) || []
       const averageRating = ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : 0
 
       setStats({
@@ -130,6 +310,25 @@ export default function AdminPanel() {
         pendingSurveys,
         averageRating: Math.round(averageRating * 10) / 10
       })
+
+      // Analítica automatizada: backend IA (OpenAI o heurística) con fallback local
+      const localInsights = buildAutomatedInsights(surveyList, catalogRooms)
+
+      if (insightsResponse.ok) {
+        const insightsPayload = await insightsResponse.json()
+        if (insightsPayload?.success && insightsPayload?.data) {
+          const provider = insightsPayload.provider === 'openai' ? 'openai' : 'heuristic'
+          setAutomatedInsights({
+            ...localInsights,
+            ...insightsPayload.data,
+            provider
+          })
+        } else {
+          setAutomatedInsights(localInsights)
+        }
+      } else {
+        setAutomatedInsights(localInsights)
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error)
       toast.error('Error al cargar datos del dashboard')
@@ -515,15 +714,96 @@ export default function AdminPanel() {
               </div>
             </div>
 
-            {/* Recent Activity */}
+            {/* Automated Insights */}
             <div className="bg-white rounded-lg shadow-sm border">
               <div className="px-6 py-4 border-b">
-                <h3 className="text-lg font-medium text-gray-900">Actividad Reciente</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium text-gray-900">Insights Automatizados (IA)</h3>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    automatedInsights.provider === 'openai'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {automatedInsights.provider === 'openai' ? 'OpenAI' : 'Heurístico'}
+                  </span>
+                </div>
               </div>
-              <div className="p-6">
-                <div className="text-center text-gray-500 py-8">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p>Los datos de actividad reciente se cargarán próximamente</p>
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="rounded-lg border bg-green-50 border-green-200 p-4">
+                    <p className="text-sm text-green-700 font-medium">Encuestas Completadas</p>
+                    <p className="text-2xl font-bold text-green-900">{automatedInsights.totalCompletedSurveys}</p>
+                  </div>
+                  <div className="rounded-lg border bg-blue-50 border-blue-200 p-4">
+                    <p className="text-sm text-blue-700 font-medium">Índice de Felicidad</p>
+                    <p className="text-2xl font-bold text-blue-900">{automatedInsights.happinessLevel}</p>
+                  </div>
+                  <div className="rounded-lg border bg-purple-50 border-purple-200 p-4">
+                    <p className="text-sm text-purple-700 font-medium">Sentimiento Comentarios</p>
+                    <p className="text-2xl font-bold text-purple-900">{automatedInsights.commentSentimentScore}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="rounded-lg border p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">Salas más visitadas</h4>
+                    <div className="space-y-2 text-sm">
+                      {automatedInsights.mostVisited.length === 0 ? (
+                        <p className="text-gray-500">Sin datos aún.</p>
+                      ) : (
+                        automatedInsights.mostVisited.map((item) => (
+                          <div key={item.roomId} className="flex items-center justify-between">
+                            <span className="text-gray-700">{item.roomName}</span>
+                            <span className="font-semibold text-gray-900">{item.count}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">Salas menos visitadas</h4>
+                    <div className="space-y-2 text-sm">
+                      {automatedInsights.leastVisited.length === 0 ? (
+                        <p className="text-gray-500">Sin datos aún.</p>
+                      ) : (
+                        automatedInsights.leastVisited.map((item) => (
+                          <div key={item.roomId} className="flex items-center justify-between">
+                            <span className="text-gray-700">{item.roomName}</span>
+                            <span className="font-semibold text-gray-900">{item.count}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border p-4">
+                    <h4 className="font-semibold text-gray-900 mb-3">Salas con más solicitud de cambio</h4>
+                    <div className="space-y-2 text-sm">
+                      {automatedInsights.mostRequestedRenovation.length === 0 ? (
+                        <p className="text-gray-500">Sin datos aún.</p>
+                      ) : (
+                        automatedInsights.mostRequestedRenovation.map((item) => (
+                          <div key={item.roomId} className="flex items-center justify-between">
+                            <span className="text-gray-700">{item.roomName}</span>
+                            <span className="font-semibold text-gray-900">{item.count}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border bg-gray-50 p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-900">Resumen IA para priorización</h4>
+                    <span className="text-sm text-gray-600">Calificación promedio: {automatedInsights.averageRating}/5</span>
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-700 list-disc pl-5">
+                    {automatedInsights.aiFindings.map((finding, index) => (
+                      <li key={`${finding}-${index}`}>{finding}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>

@@ -143,11 +143,15 @@ function Test-ProjectStructure {
     
     $requiredFiles = @(
         "template.yaml",
-        "README.md",
         "frontend\package.json",
         "backend\functions\userService\package.json",
         "backend\functions\surveyService\package.json",
         "backend\functions\roomService\package.json"
+    )
+
+    $readmePaths = @(
+        "README.md",
+        "docs\guias-retomar-proyecto\05-docs-raiz\04-inicio\README.md"
     )
     
     foreach ($file in $requiredFiles) {
@@ -155,6 +159,11 @@ function Test-ProjectStructure {
             Write-Error "Archivo requerido no encontrado: $file"
             exit 1
         }
+    }
+
+    if (-not ($readmePaths | Where-Object { Test-Path $_ })) {
+        Write-Error "README no encontrado en rutas esperadas: README.md o docs\guias-retomar-proyecto\05-docs-raiz\04-inicio\README.md"
+        exit 1
     }
     
     Write-Success "Estructura del proyecto verificada"
@@ -179,7 +188,7 @@ function Show-FinalInstructions {
     Write-Host "   npm run dev" -ForegroundColor Gray
     Write-Host ""
     Write-Host "4. 📚 Leer documentación:" -ForegroundColor Yellow
-    Write-Host "   - README.md para información general" -ForegroundColor Gray
+    Write-Host "   - docs\guias-retomar-proyecto\05-docs-raiz\04-inicio\README.md para información general" -ForegroundColor Gray
     Write-Host "   - docs\deployment.md para guía de despliegue" -ForegroundColor Gray
     Write-Host ""
     Write-Host "💡 Tip: Ejecuta 'npm run dev' en el directorio frontend para ver la aplicación" -ForegroundColor Cyan

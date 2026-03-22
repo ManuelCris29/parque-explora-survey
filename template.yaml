@@ -12,6 +12,8 @@ Globals:
         SURVEYS_TABLE: !Ref SurveysTable
         ROOMS_TABLE: !Ref RoomsTable
         API_KEY: !Ref ApiKeyValue
+        OPENAI_API_KEY: !Ref OpenAIApiKey
+        OPENAI_MODEL: !Ref OpenAIModel
 
 Parameters:
   Environment:
@@ -24,6 +26,14 @@ Parameters:
     Type: String
     Default: parque-explora-api-key-2024
     Description: API Key para autenticación básica
+  OpenAIApiKey:
+    Type: String
+    Default: ''
+    Description: API Key de OpenAI (opcional). Si está vacía, usa fallback heurístico.
+  OpenAIModel:
+    Type: String
+    Default: gpt-4o-mini
+    Description: Modelo de OpenAI para análisis semántico.
 
 Resources:
   # DynamoDB Tables
@@ -172,12 +182,15 @@ Resources:
         Variables:
           SURVEYS_TABLE: !Ref SurveysTable
           USERS_TABLE: !Ref UsersTable
+          ROOMS_TABLE: !Ref RoomsTable
           API_KEY: !Ref ApiKeyValue
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SurveysTable
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref RoomsTable
       Events:
         # GET /surveys - Get all surveys
         GetAllSurveys:
@@ -231,6 +244,15 @@ Resources:
             RestApiId: !Ref ParqueExploraApi
             Path: /surveys/{surveyId}
             Method: delete
+            Auth:
+              ApiKeyRequired: true
+        # GET /surveys/insights/ai - AI insights
+        GetSurveyInsightsAi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ParqueExploraApi
+            Path: /surveys/insights/ai
+            Method: get
             Auth:
               ApiKeyRequired: true
 

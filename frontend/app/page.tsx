@@ -15,10 +15,12 @@ export default function Home() {
   const [registerNombre, setRegisterNombre] = useState('')
   const [registerEmail, setRegisterEmail] = useState('')
   const [registerTelefono, setRegisterTelefono] = useState('')
+  const [debugMessage, setDebugMessage] = useState('')
   const router = useRouter()
 
   const handleGetSurvey = async () => {
     try {
+      setDebugMessage('')
       toast.loading('Verificando usuario...', { id: 'survey' })
 
       const userResponse = await fetch(`/api/users/${cedula}`, {
@@ -28,12 +30,14 @@ export default function Home() {
       })
 
       if (userResponse.status === 404) {
+        setDebugMessage('API respondió 404: usuario no registrado para esa cédula.')
         toast.error('Usuario no registrado. Debes estar registrado para acceder a la encuesta.', { id: 'survey' })
         setCurrentStep('user-not-found')
         return
       }
 
       if (!userResponse.ok) {
+        setDebugMessage(`API respondió ${userResponse.status}. Revisa API URL/KEY o backend.`)
         toast.error('No fue posible validar el usuario. Intenta nuevamente.', { id: 'survey' })
         return
       }
@@ -353,6 +357,12 @@ export default function Home() {
                   </>
                 )}
               </button>
+
+              {debugMessage && (
+                <div className="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                  {debugMessage}
+                </div>
+              )}
             </form>
           </div>
         )}

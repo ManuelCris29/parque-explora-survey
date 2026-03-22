@@ -20,5 +20,6 @@ parallel = true
 [default.deploy.parameters]
 resolve_s3 = true
 s3_prefix = "parque-explora-survey-dev"
-parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"parque-explora-api-key-2024\""
+parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"REPLACE_WITH_API_GATEWAY_KEY\" OpenAIApiKey=\"REPLACE_WITH_OPENAI_API_KEY\" OpenAIModel=\"gpt-4o-mini\""
 image_repositories = []
+disable_rollback = true
