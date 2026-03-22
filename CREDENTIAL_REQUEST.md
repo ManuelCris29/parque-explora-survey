@@ -97,5 +97,112 @@ Una vez que tengas las credenciales, verifica:
 
 ---
 
+## 🔧 Para Administradores: Desplegar Backend en AWS
+
+Si eres el **administrador del proyecto** y necesitas desplegar el backend en AWS:
+
+### ¿Qué es `samconfig.toml`?
+
+`samconfig.toml` es un archivo de configuración **solo para administradores** que despliegan la infraestructura a AWS. **Los usuarios normales NO lo necesitan.**
+
+### 📁 Ubicación y Uso
+
+Archivo: `samconfig.toml` (raíz del proyecto)
+
+Este archivo contiene:
+- Stack name, región AWS, configuración de CloudFormation
+- **Parámetros de despliegue** como `ApiKeyValue` y `OpenAIApiKey` (con placeholders)
+
+### 🔐 Pasos para Desplegar
+
+**SOLO EL ADMIN HACE ESTO. Los demás NO necesitan tocar este archivo.**
+
+#### Paso 1: Reemplazar Placeholders en `samconfig.toml`
+
+Edita el archivo y busca la sección `[default.deploy.parameters]`:
+
+```toml
+[default.deploy.parameters]
+parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"REPLACE_WITH_API_GATEWAY_KEY\" OpenAIApiKey=\"REPLACE_WITH_OPENAI_API_KEY\" OpenAIModel=\"gpt-4o-mini\""
+```
+
+Reemplaza:
+- `REPLACE_WITH_API_GATEWAY_KEY` → tu API Gateway key real
+- `REPLACE_WITH_OPENAI_API_KEY` → tu OpenAI API Key real
+
+**Ejemplo real:**
+```toml
+[default.deploy.parameters]
+parameter_overrides = "Environment=\"dev\" ApiKeyValue=\"jq7Ccsu8WCg5cQ4XDxXA8IVNrMIJCOm4eUWUlQYd\" OpenAIApiKey=\"sk-proj-xxxxx...\" OpenAIModel=\"gpt-4o-mini\""
+```
+
+#### Paso 2: Desplegar a AWS
+
+```bash
+# Construir la aplicación SAM
+sam build
+
+# Desplegar (usa valores de samconfig.toml)
+sam deploy
+
+# O si es la primera vez:
+sam deploy --guided
+```
+
+#### Paso 3: Recuperar Credenciales para el Equipo
+
+Una vez desplegado, obtén los valores a compartir:
+
+```bash
+# Obtener API Gateway URL
+aws cloudformation describe-stacks --stack-name parque-explora-survey-dev \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiEndpoint'].OutputValue" --output text
+
+# Obtener API Key
+aws apigateway get-api-key --api-key <KEY_ID> --include-value --query "value" --output text
+```
+
+#### Paso 4: Compartir con el Equipo
+
+Envía SOLO estos datos por canal seguro:
+- ✅ `NEXT_PUBLIC_API_URL` (URL del API Gateway)
+- ✅ `NEXT_PUBLIC_API_KEY` (la key generada)
+
+**NO compartas:**
+- ❌ `samconfig.toml` completo
+- ❌ Credenciales de AWS CLI
+- ❌ Access Keys / Secret Keys
+
+### ⚠️ IMPORTANTE
+
+**NUNCA hagas commit de `samconfig.toml` con credenciales reales en Git:**
+
+```bash
+# ❌ MALO - Las credenciales quedan en el historio de Git
+git add samconfig.toml
+git commit -m "add credentials"
+
+# ✅ BIEN - Edita localmente, NO hagas commit
+git update-index --assume-unchanged samconfig.toml
+```
+
+O simplemente no lo versionas:
+```bash
+# Revertir a placeholders antes de push
+git checkout samconfig.toml
+```
+
+---
+
+## ✅ Resumen por Rol
+
+| Rol | ¿Toca `samconfig.toml`? | ¿Toca `frontend/.env.local`? | Acción |
+|-----|------------------------|-------------------------------|--------|
+| **Admin** | Sí (local, no commit) | No | Deploya con `sam deploy` |
+| **Developer** | No | Sí | Configura con credenciales recibidas |
+| **Tester** | No | Sí | Configura con credenciales recibidas |
+
+---
+
 **Fecha de creación:** 2026-03-22  
-**Versión:** 1.0
+**Versión:** 1.1
