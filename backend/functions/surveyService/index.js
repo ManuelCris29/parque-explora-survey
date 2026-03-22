@@ -58,6 +58,89 @@ const mapToInsightItems = (counter, rooms, includeZero = false) => {
     }));
 };
 
+const roundTo = (value, decimals = 2) => {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+        return 0;
+    }
+    const factor = 10 ** decimals;
+    return Math.round(value * factor) / factor;
+};
+
+const buildConfidenceInterval95 = (values = []) => {
+    if (!Array.isArray(values) || values.length < 2) {
+        return null;
+    }
+
+    const n = values.length;
+    const mean = values.reduce((acc, current) => acc + current, 0) / n;
+    const variance = values.reduce((acc, current) => acc + ((current - mean) ** 2), 0) / (n - 1);
+    const stdDev = Math.sqrt(variance);
+    const margin = 1.96 * (stdDev / Math.sqrt(n));
+
+    return {
+        mean: roundTo(mean, 3),
+        stdDev: roundTo(stdDev, 3),
+        margin: roundTo(margin, 3),
+        lower: roundTo(mean - margin, 3),
+        upper: roundTo(mean + margin, 3),
+        confidence: 0.95,
+        n
+    };
+};
+
+const buildInsightsMeta = ({
+    surveysCount,
+    completedSurveys,
+    ratings,
+    visitedItems,
+    mostVisited,
+    leastVisited,
+    sentimentScore,
+    mostRequestedRenovation
+}) => {
+    const commentsCount = completedSurveys.filter((survey) => typeof survey.comentarios === 'string' && survey.comentarios.trim().length > 0).length;
+    const nonVisitedRooms = visitedItems.filter((item) => item.count === 0).length;
+    const ratingConfidence95 = buildConfidenceInterval95(ratings);
+
+    return {
+        generatedAt: new Date().toISOString(),
+        formulaVersion: 'insights-v2.1.0',
+        sample: {
+            totalSurveys: surveysCount,
+            completedSurveys: completedSurveys.length,
+            ratingsCount: ratings.length,
+            commentsCount,
+            roomsCatalogCount: visitedItems.length,
+            roomsNeverVisitedCount: nonVisitedRooms
+        },
+        methodology: {
+            averageRating: 'mean(calificacionGeneral) con valores numéricos válidos.',
+            mostVisited: 'Top 3 por count descendente; empate por roomName ascendente.',
+            leastVisited: 'Top 3 por count ascendente, excluyendo salas ya presentes en mostVisited; empate por roomName ascendente.',
+            mostRequestedRenovation: 'Top 3 por count descendente en salasParaRenovar.',
+            heuristicSentiment: 'Promedio por encuesta de (calificacionGeneral - 3) * 0.9 + score léxico en comentarios.',
+            happinessLevelRules: {
+                Alta: 'averageRating >= 4.2 y commentSentimentScore >= 0.5',
+                Media: 'Caso contrario cuando no cumple reglas de Alta o Baja',
+                Baja: 'averageRating < 3.3 o commentSentimentScore < 0'
+            }
+        },
+        quality: {
+            ratingConfidence95,
+            sentimentRawTotal: roundTo(sentimentScore, 4),
+            rankingOverlapPrevented: true,
+            topMostVisited: mostVisited,
+            topLeastVisited: leastVisited,
+            topRenovationRequests: mostRequestedRenovation
+        },
+        limitations: [
+            'El score léxico de sentimiento es heurístico y sensible al vocabulario usado por visitantes.',
+            'Si la muestra es pequeña, la variabilidad puede ser alta incluso con métricas positivas.',
+            'La representatividad depende de la tasa de encuestas completadas.'
+        ]
+    };
+};
+
 const buildHeuristicInsights = (surveys, rooms) => {
     const completedSurveys = (surveys || []).filter((survey) => survey.estado === 'completed');
 
@@ -70,6 +153,42 @@ const buildHeuristicInsights = (surveys, rooms) => {
             happinessLevel: 'Sin datos',
             commentSentimentScore: 0,
             totalCompletedSurveys: 0,
+            meta: {
+                generatedAt: new Date().toISOString(),
+                formulaVersion: 'insights-v2.1.0',
+                sample: {
+                    totalSurveys: (surveys || []).length,
+                    completedSurveys: 0,
+                    ratingsCount: 0,
+                    commentsCount: 0,
+                    roomsCatalogCount: (rooms || []).length,
+                    roomsNeverVisitedCount: (rooms || []).length
+                },
+                methodology: {
+                    averageRating: 'mean(calificacionGeneral) con valores numéricos válidos.',
+                    mostVisited: 'Top 3 por count descendente; empate por roomName ascendente.',
+                    leastVisited: 'Top 3 por count ascendente, excluyendo salas ya presentes en mostVisited; empate por roomName ascendente.',
+                    mostRequestedRenovation: 'Top 3 por count descendente en salasParaRenovar.',
+                    heuristicSentiment: 'Promedio por encuesta de (calificacionGeneral - 3) * 0.9 + score léxico en comentarios.',
+                    happinessLevelRules: {
+                        Alta: 'averageRating >= 4.2 y commentSentimentScore >= 0.5',
+                        Media: 'Caso contrario cuando no cumple reglas de Alta o Baja',
+                        Baja: 'averageRating < 3.3 o commentSentimentScore < 0'
+                    }
+                },
+                quality: {
+                    ratingConfidence95: null,
+                    sentimentRawTotal: 0,
+                    rankingOverlapPrevented: true,
+                    topMostVisited: [],
+                    topLeastVisited: [],
+                    topRenovationRequests: []
+                },
+                limitations: [
+                    'Aún no hay datos suficientes para inferencias estadísticas.'
+                ],
+                sentimentSource: 'heuristic'
+            },
             aiFindings: ['Aún no hay encuestas completadas para generar insights automáticos.']
         };
     }
@@ -80,9 +199,18 @@ const buildHeuristicInsights = (surveys, rooms) => {
     const visitedCounter = countByRoom(allVisitedRooms);
     const renovationCounter = countByRoom(allRenovationRooms);
 
-    const visitedItems = mapToInsightItems(visitedCounter, rooms, true).sort((a, b) => b.count - a.count);
-    const mostVisited = visitedItems.filter((item) => item.count > 0).slice(0, 3);
-    const leastVisited = visitedItems.filter((item) => item.count >= 0).sort((a, b) => a.count - b.count).slice(0, 3);
+    const visitedItems = mapToInsightItems(visitedCounter, rooms, true);
+
+    const mostVisited = [...visitedItems]
+        .filter((item) => item.count > 0)
+        .sort((a, b) => (b.count - a.count) || a.roomName.localeCompare(b.roomName))
+        .slice(0, 3);
+
+    const mostVisitedIds = new Set(mostVisited.map((item) => item.roomId));
+    const leastVisited = [...visitedItems]
+        .filter((item) => item.count >= 0 && !mostVisitedIds.has(item.roomId))
+        .sort((a, b) => (a.count - b.count) || a.roomName.localeCompare(b.roomName))
+        .slice(0, 3);
 
     const mostRequestedRenovation = mapToInsightItems(renovationCounter, rooms)
         .sort((a, b) => b.count - a.count)
@@ -124,7 +252,7 @@ const buildHeuristicInsights = (surveys, rooms) => {
         });
     });
 
-    const commentSentimentScore = Math.round((sentimentScore / completedSurveys.length) * 100) / 100;
+    const commentSentimentScore = roundTo(sentimentScore / completedSurveys.length, 2);
 
     let happinessLevel = 'Media';
     if (averageRating >= 4.2 && commentSentimentScore >= 0.5) {
@@ -150,10 +278,23 @@ const buildHeuristicInsights = (surveys, rooms) => {
         mostVisited,
         leastVisited,
         mostRequestedRenovation,
-        averageRating: Math.round(averageRating * 10) / 10,
+        averageRating: roundTo(averageRating, 1),
         happinessLevel,
         commentSentimentScore,
         totalCompletedSurveys: completedSurveys.length,
+        meta: {
+            ...buildInsightsMeta({
+                surveysCount: (surveys || []).length,
+                completedSurveys,
+                ratings,
+                visitedItems,
+                mostVisited,
+                leastVisited,
+                sentimentScore,
+                mostRequestedRenovation
+            }),
+            sentimentSource: 'heuristic'
+        },
         aiFindings
     };
 };
@@ -270,6 +411,10 @@ const enrichInsightsWithOpenAI = async (heuristicInsights, surveys) => {
             ...heuristicInsights,
             commentSentimentScore: aiSentiment,
             happinessLevel: aiHappinessLevel,
+            meta: {
+                ...heuristicInsights.meta,
+                sentimentSource: 'openai'
+            },
             aiFindings: Array.isArray(parsed.aiFindings) && parsed.aiFindings.length > 0
                 ? parsed.aiFindings.slice(0, 4)
                 : heuristicInsights.aiFindings
@@ -307,7 +452,8 @@ const getAiInsights = async () => {
             body: JSON.stringify({
                 success: true,
                 provider: enriched.provider,
-                data: enriched.data
+                data: enriched.data,
+                meta: enriched.data?.meta || null
             })
         };
     } catch (error) {
